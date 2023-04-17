@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class BluetoothViewModel @Inject constructor(
@@ -33,7 +34,12 @@ class BluetoothViewModel @Inject constructor(
     ) { scannedDevices, pairedDevices, state ->
         state.copy(
             scannedDevices = scannedDevices,
-            pairedDevices = pairedDevices
+            pairedDevices = pairedDevices,
+            message = if (state.isConnectionEstablished) {
+                state.message
+            } else {
+                emptyList()
+            }
         )
     }.stateIn(
         viewModelScope,
@@ -62,6 +68,19 @@ class BluetoothViewModel @Inject constructor(
         deviceConnectionJob = bluetoothController
             .connectToDevice(device)
             .listen()
+    }
+
+    fun sendMessage(message: String) = viewModelScope.launch {
+        val sentMessage = bluetoothController.sendMessageToDevice(
+            device = BluetoothDevice(
+                name = "Lacy Matthews",
+                address = "agam"
+            ), message = message
+        )
+
+        _uiState.update {
+            it.copy(message = (it.message + sentMessage).filterNotNull())
+        }
     }
 
     fun disconnectFromDevice() {
@@ -112,17 +131,24 @@ class BluetoothViewModel @Inject constructor(
                         )
                     }
                 }
-            }
-        }
-            .catch { _ ->
-                bluetoothController.stopBluetoothServer()
-                _uiState.update {
-                    it.copy(
-                        isConnectionEstablished = false,
-                        isConnecting = false,
-                    )
+
+                is ConnectionResult.TransferSuccessful -> {
+                    _uiState.update {
+                        it.copy(
+                            message = (it.message + result.bluetoothMessage).filterNotNull()
+                        )
+                    }
                 }
             }
+        }.catch { _ ->
+            bluetoothController.stopBluetoothServer()
+            _uiState.update {
+                it.copy(
+                    isConnectionEstablished = false,
+                    isConnecting = false,
+                )
+            }
+        }
             .launchIn(viewModelScope)
     }
 

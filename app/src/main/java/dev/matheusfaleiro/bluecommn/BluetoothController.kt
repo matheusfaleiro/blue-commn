@@ -2,6 +2,7 @@ package dev.matheusfaleiro.bluecommn
 
 import dev.matheusfaleiro.bluecommn.data.chat.ConnectionResult
 import dev.matheusfaleiro.bluecommn.domain.BluetoothDevice
+import dev.matheusfaleiro.bluecommn.domain.BluetoothMessage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -82,6 +83,20 @@ interface BluetoothController {
     @return A Flow of ConnectionResult which represents the result of the connection attempt.
      */
     fun connectToDevice(device: BluetoothDevice): Flow<ConnectionResult>
+
+
+    /**
+     * Attempts to send a message to a specific BluetoothDevice.
+     *
+     * This method tries to establish a connection and send the message to the given device.
+     * If the message is sent successfully, it returns the BluetoothMessage object.
+     * If there is a failure during the process, it returns null.
+     *
+     * @param device The target BluetoothDevice to send the message to.
+     * @param message The message to be sent as a String.
+     * @return A BluetoothMessage object if the message is sent successfully, or null otherwise.
+     */
+    suspend fun sendMessageToDevice(device: BluetoothDevice, message: String): BluetoothMessage?
 
     /**
     Stops the Bluetooth server and disconnects any active connections.

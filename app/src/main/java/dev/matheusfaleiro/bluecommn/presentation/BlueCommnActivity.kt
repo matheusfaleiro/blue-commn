@@ -21,13 +21,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import dev.matheusfaleiro.bluecommn.presentation.component.ChatScreen
 import dev.matheusfaleiro.bluecommn.presentation.component.DeviceScreen
 import dev.matheusfaleiro.bluecommn.ui.theme.BlueCommnTheme
-import java.util.UUID
 
 @AndroidEntryPoint
 class BlueCommnActivity : ComponentActivity() {
@@ -109,6 +108,14 @@ class BlueCommnActivity : ComponentActivity() {
                                 CircularProgressIndicator()
                                 Text(text = "Connecting...")
                             }
+                        }
+
+                        bluetoothUiState.isConnectionEstablished -> {
+                            ChatScreen(
+                                uiState = bluetoothUiState,
+                                onDisconnect = viewModel::disconnectFromDevice,
+                                onSendMessage = viewModel::sendMessage
+                            )
                         }
 
                         else -> {
